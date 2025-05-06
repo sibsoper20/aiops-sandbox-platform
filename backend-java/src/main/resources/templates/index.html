@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIOps Sandbox</title>
+</head>
+<body>
+    <h1>Ask AIOps a Question</h1>
+    <form method="post" action="/ask">
+        <input type="text" name="question" placeholder="Enter your question" required />
+        <select name="dataType">
+            <option value="metrics">Metrics</option>
+            <option value="logs">Logs</option>
+        </select>
+        <button type="submit">Ask</button>
+    </form>
+
+    <div>
+        <h2>AI Response:</h2>
+        <pre th:text="${response}"></pre>
+    </div>
+</body>
+</html>

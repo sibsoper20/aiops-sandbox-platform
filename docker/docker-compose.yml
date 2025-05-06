@@ -1,0 +1,30 @@
+services:
+  loki:
+    image: grafana/loki:2.9.1
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  mimir:
+    image: grafana/mimir:latest
+    ports:
+      - "9009:9009"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: aiops
+      POSTGRES_PASSWORD: aiops
+      POSTGRES_DB: aiopsdb
+    ports:
+      - "5432:5432"
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:
