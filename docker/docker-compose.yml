@@ -1,14 +1,23 @@
+version: '3.8'
+
 services:
   loki:
     image: grafana/loki:2.9.1
     ports:
       - "3100:3100"
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+      - loki-wal:/wal
     command: -config.file=/etc/loki/local-config.yaml
 
   mimir:
     image: grafana/mimir:latest
     ports:
       - "9009:9009"
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+    command: -config.file=/etc/mimir/mimir.yaml -target=all
 
   postgres:
     image: postgres:14
@@ -19,12 +28,30 @@ services:
     ports:
       - "5432:5432"
 
-  ollama:
-    image: ollama/ollama
+  grafana:
+    image: grafana/grafana:latest
     ports:
-      - "11434:11434"
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - ollama-data:/root/.ollama
+      - grafana-storage:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
 
 volumes:
-  ollama-data:
+  grafana-storage:
+  loki-data:
+  loki-wal:

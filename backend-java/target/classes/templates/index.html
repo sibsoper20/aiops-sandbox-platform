@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>AIOps Assistant</title>
+</head>
+<body>
+    <h1>AIOps AI Assistant</h1>
+
+    <form action="/ask" method="post">
+        <label for="question">Ask a question:</label><br>
+        <input type="text" id="question" name="question" required><br><br>
+
+        <label for="dataType">Choose data type:</label>
+        <select id="dataType" name="dataType">
+            <option value="logs">Logs</option>
+            <option value="metrics">Metrics</option>
+        </select><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <br>
+    <div th:if="${response}">
+        <h2>AI Response:</h2>
+        <pre th:text="${response}"></pre>
+    </div>
+</body>
+</html>
