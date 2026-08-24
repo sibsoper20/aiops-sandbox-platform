@@ -1,0 +1,29 @@
+# Build output
+target/
+build/
+dist/
+*.class
+*.jar
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+*.key
+*.pem
+kubeconfig
+kubeconfig.*
+
+# Kubernetes and Helm generated files
+charts/*.tgz
+tmp/
