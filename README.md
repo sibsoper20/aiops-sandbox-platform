@@ -1,30 +1,41 @@
-# AIOps Sandbox Platform
+# SOFTCON 2027 AIOps Demo
 
-## Structure
-- `backend-java/`: Spring Boot app (UI + API orchestration)
-- `python-aiops-engine/`: Python service (analytics + LLM via Ollama)
-- `docker/`: Loki, Mimir, PostgreSQL, Ollama services
-- `architecture-diagram/`: System diagram
+A self-managed AIOps demonstration that runs on Kubernetes and uses Grafana telemetry plus a local AI model to produce evidence-backed incident investigations.
 
-## Run Guide
+## Project status
 
-### Step 1: Start Docker Services
-```bash
-cd docker/
-docker-compose up -d
-```
+The original 2025 Docker Compose proof of concept is preserved on the `legacy-poc-2025` branch. New Kubernetes work is developed on `softcon-2027`. The default `main` branch remains unchanged until the Kubernetes foundation is validated.
 
-### Step 2: Run Python Microservice
-```bash
-cd python-aiops-engine/
-pip install -r requirements.txt
-python aiops_analysis_server.py
-```
+## Target architecture
 
-### Step 3: Run Spring Boot App
-```bash
-cd backend-java/
-./mvnw spring-boot:run
-```
+- Single-node k3s initially
+- `demo`, `observability`, `aiops`, and `storage` namespaces
+- Grafana, Loki, Mimir, Alloy, and optional Tempo
+- Containerized local model behind an OpenAI-compatible API
+- Instrumented order application with controlled fault injection
+- Human-triggered, evidence-backed investigation workflow
 
-Then go to http://localhost:8080
+## First increment
+
+This branch currently establishes:
+
+1. Project organization and architecture decisions
+2. Kubernetes namespaces
+3. A disposable test workload, Service, and ingress
+4. k3s installation and validation guidance
+
+Stateful observability, business services, and model inference are intentionally excluded until the Kubernetes foundation is proven.
+
+## Repository layout
+
+- `docs/` — architecture, decisions, and runbooks
+- `platform/` — k3s, namespaces, ingress, and storage
+- `observability/` — telemetry platform configuration
+- `applications/` — custom demo and AIOps services
+- `model-serving/` — local inference deployment
+- `tests/` — validation and evaluation
+- `scripts/` — repeatable operations
+
+## Validate the foundation
+
+See [platform/k3s/README.md](platform/k3s/README.md).
