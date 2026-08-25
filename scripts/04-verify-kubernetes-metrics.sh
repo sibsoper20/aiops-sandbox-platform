@@ -54,7 +54,7 @@ PF_PID="$!"
 
 METRICS_READY="false"
 for _ in {1..20}; do
-  if curl -fsS http://127.0.0.1:18081/metrics >"$METRICS_FILE"; then
+  if curl -fsS http://127.0.0.1:18081/metrics >"$METRICS_FILE" 2>/dev/null; then
     METRICS_READY="true"
     break
   fi
