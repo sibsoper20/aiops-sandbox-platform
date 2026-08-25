@@ -22,8 +22,10 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 4 | `04-verify-kubernetes-metrics.sh` | Runs read-only checks and writes a report under `/tmp` |
 | 5 | `05-deploy-node-exporter.sh` | Deploys host metrics collection as a DaemonSet |
 | 6 | `06-verify-node-exporter.sh` | Confirms CPU, memory, filesystem, and host metrics |
+| 7 | `07-deploy-mimir.sh` | Deploys persistent single-process Mimir for the lab |
+| 8 | `08-verify-mimir.sh` | Checks Mimir storage, readiness, and query API |
 
-Later scripts will add Mimir, Grafana Alloy, Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
+Later scripts will add Grafana Alloy, Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
 ## Start from scratch
 
@@ -59,6 +61,8 @@ bash scripts/03-deploy-kubernetes-metrics.sh
 bash scripts/04-verify-kubernetes-metrics.sh
 bash scripts/05-deploy-node-exporter.sh
 bash scripts/06-verify-node-exporter.sh
+bash scripts/07-deploy-mimir.sh
+bash scripts/08-verify-mimir.sh
 ```
 
 Read the output after each stage before continuing.
@@ -111,6 +115,8 @@ The final script checks:
 - kube-state-metrics exposes `kube_*` metrics
 - Node Exporter runs on the Kubernetes node
 - Node Exporter exposes CPU, memory, filesystem, and host identity metrics
+- Mimir uses a Bound persistent volume
+- Mimir readiness and PromQL query endpoints respond successfully
 
 It writes a timestamped report to:
 
@@ -173,6 +179,14 @@ helm list -A
 ## Cleanup
 
 Cleanup is deliberately manual so learners can see what is being removed.
+
+Remove Mimir while retaining its persistent volume:
+
+```bash
+sudo k3s kubectl -n observability delete deployment/mimir service/mimir configmap/mimir-config
+```
+
+Deleting the `mimir-data` PVC also deletes stored lab metrics and must be an intentional action.
 
 Remove Node Exporter:
 
