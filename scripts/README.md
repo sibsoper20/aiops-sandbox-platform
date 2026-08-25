@@ -20,8 +20,10 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 2 | `02-install-helm.sh` | Installs Helm 4 and creates a protected user kubeconfig |
 | 3 | `03-deploy-kubernetes-metrics.sh` | Validates k3s Metrics Server and deploys kube-state-metrics |
 | 4 | `04-verify-kubernetes-metrics.sh` | Runs read-only checks and writes a report under `/tmp` |
+| 5 | `05-deploy-node-exporter.sh` | Deploys host metrics collection as a DaemonSet |
+| 6 | `06-verify-node-exporter.sh` | Confirms CPU, memory, filesystem, and host metrics |
 
-Later scripts will add Node Exporter, Grafana Alloy, Mimir, Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
+Later scripts will add Mimir, Grafana Alloy, Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
 ## Start from scratch
 
@@ -55,6 +57,8 @@ bash scripts/01-deploy-foundation.sh
 bash scripts/02-install-helm.sh
 bash scripts/03-deploy-kubernetes-metrics.sh
 bash scripts/04-verify-kubernetes-metrics.sh
+bash scripts/05-deploy-node-exporter.sh
+bash scripts/06-verify-node-exporter.sh
 ```
 
 Read the output after each stage before continuing.
@@ -76,6 +80,7 @@ Optional environment variables:
 | `K3S_CHANNEL` | `stable` | k3s release channel used for a new installation |
 | `K3S_VERSION` | empty | Exact k3s version; overrides the channel when supplied |
 | `KSM_CHART_VERSION` | `8.4.0` | kube-state-metrics Helm chart version |
+| `NODE_EXPORTER_CHART_VERSION` | `4.56.1` | Node Exporter Helm chart version |
 | `KUBECONFIG` | `$HOME/.kube/config` | User kubeconfig used by Helm |
 
 Example with an exact k3s version:
@@ -98,6 +103,8 @@ The final script checks:
 - `kubectl top pods -A` returns resource metrics
 - kube-state-metrics is available
 - kube-state-metrics exposes `kube_*` metrics
+- Node Exporter runs on the Kubernetes node
+- Node Exporter exposes CPU, memory, filesystem, and host identity metrics
 
 It writes a timestamped report to:
 
@@ -160,6 +167,12 @@ helm list -A
 ## Cleanup
 
 Cleanup is deliberately manual so learners can see what is being removed.
+
+Remove Node Exporter:
+
+```bash
+helm uninstall prometheus-node-exporter -n observability
+```
 
 Remove kube-state-metrics:
 
