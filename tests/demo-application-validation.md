@@ -8,20 +8,26 @@
 
 | Check | Result | Evidence |
 |---|---|---|
-| Go formatting passes | Not run | |
-| Unit and handler tests pass | Not run | |
-| Go vet passes | Not run | |
-| Health endpoint works | Not run | |
-| Readiness endpoint works | Not run | |
-| Order creation and listing work | Not run | |
-| Prometheus metrics are exposed | Not run | |
-| Structured JSON request logs are emitted | Not run | |
+| Go formatting passes | Pass | `gofmt` reported no files requiring changes. |
+| Unit and handler tests pass | Pass | Race-enabled tests passed in 1.019s with 46.6% statement coverage. |
+| Go vet passes | Pass | `go vet ./...` completed without findings. |
+| Health endpoint works | Pass | Returned `{"status":"ok"}`. |
+| Readiness endpoint works | Pass | Returned ready with memory storage during source validation. |
+| Order creation and listing work | Pass | Created and returned the SOFTCON Coffee validation order. |
+| Prometheus metrics are exposed | Pass | Request, error, order, database, and duration metrics were returned. |
+| Structured JSON request logs are emitted | Pass | Logs include request ID, method, path, status, duration, and storage. |
 | Non-root container image builds | Not run | |
 | GitHub Actions workflow passes | Not run | |
 
+## Evidence
+
+Source verification report: `/tmp/softcon-aiops-demo-api-source-20260825-234601.log`
+
+Dependency integrity: `go mod verify` passed. Dependency metadata was committed as `bc24639`.
+
 ## Decision
 
-Increment A accepted: No
+Increment A accepted: No — container build and GitHub Actions remain to be verified.
 
 ## Increment B — Kubernetes deployment
 
