@@ -66,9 +66,9 @@ grep -q '"environment":"lab"' <<<"$QUERY_RESULT" || fail "Environment label was 
 
 {
   info "Alloy and Loki workloads"
-  kctl -n observability get deployment/alloy,statefulset/loki,pods \
+  kctl -n observability get deployment,pods \
     -l app.kubernetes.io/instance=alloy -o wide
-  kctl -n observability get statefulset/loki,pods \
+  kctl -n observability get statefulset,pods \
     -l app.kubernetes.io/instance=loki -o wide
 
   info "Validation pod"
