@@ -37,13 +37,17 @@ The first port-forward connection attempt occurred before the listener was ready
 
 | Check | Result | Evidence |
 |---|---|---|
-| Node Exporter DaemonSet is available | Not run | |
-| Node Exporter pod is running | Not run | |
-| Node Exporter service is reachable | Not run | |
-| CPU metrics are exposed | Not run | |
-| Memory metrics are exposed | Not run | |
-| Filesystem metrics are exposed | Not run | |
+| Node Exporter DaemonSet is available | Pass | Desired, current, ready, and available all reported 1. |
+| Node Exporter pod is running | Pass | Pod running on `pop-os` with zero restarts. |
+| Node Exporter service is reachable | Pass | ClusterIP service exposed port 9100 and verification retrieved metrics. |
+| CPU metrics are exposed | Pass | `node_cpu_seconds_total` was present. |
+| Memory metrics are exposed | Pass | `node_memory_MemAvailable_bytes` reported approximately 40.5 GB available. |
+| Filesystem metrics are exposed | Pass | Root filesystem reported approximately 442 GB available. |
 
 ## Decision
 
-Increment B accepted: No
+Increment B accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-node-exporter-20260825-214433.log`
+
+Node Exporter also exposed temporary, tmpfs, and LM Studio AppImage FUSE mounts. These will be filtered in Alloy before remote write.
