@@ -24,8 +24,10 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 6 | `06-verify-node-exporter.sh` | Confirms CPU, memory, filesystem, and host metrics |
 | 7 | `07-deploy-mimir.sh` | Deploys persistent single-process Mimir for the lab |
 | 8 | `08-verify-mimir.sh` | Checks Mimir storage, readiness, and query API |
+| 9 | `09-deploy-alloy.sh` | Deploys Alloy and its metrics collection pipeline |
+| 10 | `10-verify-alloy.sh` | Proves both metric sources reach Mimir with labels and filtering |
 
-Later scripts will add Grafana Alloy, Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
+Later scripts will add Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
 ## Start from scratch
 
@@ -63,6 +65,8 @@ bash scripts/05-deploy-node-exporter.sh
 bash scripts/06-verify-node-exporter.sh
 bash scripts/07-deploy-mimir.sh
 bash scripts/08-verify-mimir.sh
+bash scripts/09-deploy-alloy.sh
+bash scripts/10-verify-alloy.sh
 ```
 
 Read the output after each stage before continuing.
@@ -91,6 +95,7 @@ Optional environment variables:
 | `K3S_VERSION` | empty | Exact k3s version; overrides the channel when supplied |
 | `KSM_CHART_VERSION` | `8.4.0` | kube-state-metrics Helm chart version |
 | `NODE_EXPORTER_CHART_VERSION` | `4.56.1` | Node Exporter Helm chart version |
+| `ALLOY_CHART_VERSION` | `1.12.0` | Grafana Alloy Helm chart version |
 | `KUBECONFIG` | `$HOME/.kube/config` | User kubeconfig used by Helm |
 
 Example with an exact k3s version:
@@ -117,11 +122,14 @@ The final script checks:
 - Node Exporter exposes CPU, memory, filesystem, and host identity metrics
 - Mimir uses a Bound persistent volume
 - Mimir readiness and PromQL query endpoints respond successfully
+- Alloy scrapes Node Exporter and kube-state-metrics
+- Mimir contains both metric streams with stable lab labels
+- Temporary, tmpfs, and FUSE filesystem metrics are filtered
 
 It writes a timestamped report to:
 
 ```text
-/tmp/softcon-aiops-kubernetes-metrics-<timestamp>.log
+/tmp/softcon-aiops-<stage>-<timestamp>.log
 ```
 
 Review that report yourself. The script does not automatically claim that a phase is accepted.
@@ -170,6 +178,12 @@ sudo k3s kubectl -n observability \
   logs deployment/kube-state-metrics
 ```
 
+Alloy logs:
+
+```bash
+sudo k3s kubectl -n observability logs deployment/alloy --tail=100
+```
+
 Helm releases:
 
 ```bash
@@ -179,6 +193,13 @@ helm list -A
 ## Cleanup
 
 Cleanup is deliberately manual so learners can see what is being removed.
+
+Remove Alloy:
+
+```bash
+helm uninstall alloy -n observability
+sudo k3s kubectl -n observability delete configmap alloy-config
+```
 
 Remove Mimir while retaining its persistent volume:
 
