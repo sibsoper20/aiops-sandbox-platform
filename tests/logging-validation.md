@@ -26,16 +26,27 @@ Verification report: `/tmp/softcon-aiops-loki-20260825-224522.log`
 
 | Check | Result | Evidence |
 |---|---|---|
-| Alloy discovers Kubernetes pods | Not run | |
-| Alloy reads Kubernetes container logs | Not run | |
-| Required bounded labels are present | Not run | |
-| Alloy sends container logs to Loki | Not run | |
-| Unique validation-pod log is returned by LogQL | Not run | |
+| Alloy discovers Kubernetes pods | Pass | Temporary validation pod was discovered in namespace `demo`. |
+| Alloy reads Kubernetes container logs | Pass | Exact container output was collected. |
+| Required bounded labels are present | Pass | Cluster, environment, namespace, app, pod, container, and job were returned. |
+| Alloy sends container logs to Loki | Pass | Loki returned a successful streams result. |
+| Unique validation-pod log is returned by LogQL | Pass | Query returned `softcon-kubernetes-log-20260825-230216`. |
 
 ## Decision
 
-Increment B accepted: No
+Increment B accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-kubernetes-logs-20260825-230216.log`
 
 ## Increment C — Grafana log exploration
 
-Not started.
+| Check | Result | Evidence |
+|---|---|---|
+| Loki data source is provisioned | Not run | |
+| Grafana reports the Loki data source healthy | Not run | |
+| Kubernetes log dashboard is provisioned | Not run | |
+| Grafana proxy returns a Loki query | Not run | |
+
+## Decision
+
+Increment C accepted: No
