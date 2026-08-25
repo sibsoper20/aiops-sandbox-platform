@@ -16,8 +16,8 @@
 | Order creation and listing work | Pass | Created and returned the SOFTCON Coffee validation order. |
 | Prometheus metrics are exposed | Pass | Request, error, order, database, and duration metrics were returned. |
 | Structured JSON request logs are emitted | Pass | Logs include request ID, method, path, status, duration, and storage. |
-| Non-root container image builds | Not run | |
-| GitHub Actions workflow passes | Not run | |
+| Non-root container image builds | Pass | GitHub Actions container job completed successfully in 38 seconds. |
+| GitHub Actions workflow passes | Pass | Test and container jobs both passed for commit `bc24639`. |
 
 ## Evidence
 
@@ -27,7 +27,9 @@ Dependency integrity: `go mod verify` passed. Dependency metadata was committed 
 
 ## Decision
 
-Increment A accepted: No — container build and GitHub Actions remain to be verified.
+Increment A accepted: Yes
+
+The public image was published to GHCR with tags `softcon-2027` and `sha-bc24639`. Kubernetes uses the immutable commit tag `sha-bc24639`.
 
 ## Increment B — Kubernetes deployment
 
