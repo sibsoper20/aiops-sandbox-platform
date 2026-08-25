@@ -56,14 +56,30 @@ Node Exporter also exposed temporary, tmpfs, and LM Studio AppImage FUSE mounts.
 
 | Check | Result | Evidence |
 |---|---|---|
-| Mimir deployment is available | Not run | |
-| Mimir pod is running | Not run | |
-| Mimir persistent volume is Bound | Not run | |
-| Mimir readiness endpoint succeeds | Not run | |
-| Mimir PromQL query API succeeds | Not run | |
+| Mimir deployment is available | Pass | Deployment rolled out with 1/1 available replica. |
+| Mimir pod is running | Pass | Pod running on `pop-os` with zero restarts. |
+| Mimir persistent volume is Bound | Pass | `mimir-data` is Bound to a 10 GiB `local-path` volume. |
+| Mimir readiness endpoint succeeds | Pass | `/ready` returned `ready`. |
+| Mimir PromQL query API succeeds | Pass | `vector(1)` returned a successful vector result with value 1. |
 
 ## Decision
 
-Increment C accepted: No
+Increment C accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-mimir-20260825-215144.log`
 
 Metric ingestion and persistence will be validated in Increment D after Alloy is connected.
+
+## Increment D — Collection pipeline
+
+| Check | Result | Evidence |
+|---|---|---|
+| Alloy deployment is available | Not run | |
+| Node Exporter samples reach Mimir | Not run | |
+| kube-state-metrics samples reach Mimir | Not run | |
+| Stable lab labels are applied | Not run | |
+| Noisy temporary filesystem samples are filtered | Not run | |
+
+## Decision
+
+Increment D accepted: No
