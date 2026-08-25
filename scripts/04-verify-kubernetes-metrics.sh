@@ -11,6 +11,7 @@ sudo -v
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 REPORT="/tmp/softcon-aiops-kubernetes-metrics-$TIMESTAMP.log"
 PORT_FORWARD_LOG="/tmp/softcon-kube-state-metrics-port-forward-$TIMESTAMP.log"
+METRICS_FILE="/tmp/softcon-kube-state-metrics-$TIMESTAMP.txt"
 PF_PID=""
 
 cleanup() {
@@ -32,7 +33,9 @@ trap cleanup EXIT
   kctl -n demo rollout status deployment/foundation-test --timeout=120s
 
   info "Ingress response"
-  curl -sS -o /dev/null -w 'HTTP %{http_code}\n'     -H 'Host: aiops-demo.local' http://127.0.0.1
+  HTTP_CODE="$(curl -sS -o /dev/null -w '%{http_code}' -H 'Host: aiops-demo.local' http://127.0.0.1)"
+  printf 'HTTP %s\n' "$HTTP_CODE"
+  [[ "$HTTP_CODE" == "200" ]] || fail "Foundation ingress returned HTTP $HTTP_CODE instead of 200"
 
   info "Node resource metrics"
   kctl top nodes
@@ -41,27 +44,29 @@ trap cleanup EXIT
   kctl top pods -A
 
   info "kube-state-metrics resources"
-  kctl -n observability get deployment,pods,service     -l app.kubernetes.io/name=kube-state-metrics -o wide
+  kctl -n observability get deployment,pods,service -l app.kubernetes.io/name=kube-state-metrics -o wide
   kctl -n observability rollout status deployment/kube-state-metrics --timeout=120s
 } | tee "$REPORT"
 
 info "Starting temporary kube-state-metrics port forward"
-sudo k3s kubectl -n observability   port-forward service/kube-state-metrics 18081:8080   >"$PORT_FORWARD_LOG" 2>&1 &
+sudo k3s kubectl -n observability port-forward service/kube-state-metrics 18081:8080 >"$PORT_FORWARD_LOG" 2>&1 &
 PF_PID="$!"
 
+METRICS_READY="false"
 for _ in {1..20}; do
-  if curl -fsS http://127.0.0.1:18081/metrics >/tmp/softcon-kube-state-metrics.txt; then
+  if curl -fsS http://127.0.0.1:18081/metrics >"$METRICS_FILE"; then
+    METRICS_READY="true"
     break
   fi
   sleep 1
 done
 
-grep -q '^kube_' /tmp/softcon-kube-state-metrics.txt ||
-  fail "kube-state-metrics endpoint did not return kube_* metrics"
+[[ "$METRICS_READY" == "true" ]] || fail "Unable to reach the kube-state-metrics endpoint"
+grep -q '^kube_' "$METRICS_FILE" || fail "kube-state-metrics did not return kube_* metrics"
 
 {
   info "Sample kube-state-metrics output"
-  grep -E '^(kube_node_info|kube_pod_info|kube_deployment_status_replicas)'     /tmp/softcon-kube-state-metrics.txt | head -20 || true
+  grep -E '^(kube_node_info|kube_pod_info|kube_deployment_status_replicas)' "$METRICS_FILE" | head -20 || true
 
   info "Verification passed"
   printf 'Report: %s\n' "$REPORT"
