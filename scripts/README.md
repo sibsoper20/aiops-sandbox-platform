@@ -33,6 +33,8 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 14 | `14-verify-loki.sh` | Pushes and queries a synthetic log to prove Loki storage |
 | 15 | `15-enable-kubernetes-logs.sh` | Adds Alloy pod discovery and Kubernetes log collection |
 | 16 | `16-verify-kubernetes-logs.sh` | Proves a labeled container log reaches Loki |
+| 17 | `17-configure-grafana-logs.sh` | Provisions Loki and the log dashboard in Grafana |
+| 18 | `18-verify-grafana-logs.sh` | Verifies Grafana data source, dashboard, and Loki query |
 
 Later scripts will add Kubernetes log collection, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
@@ -80,6 +82,8 @@ bash scripts/13-deploy-loki.sh
 bash scripts/14-verify-loki.sh
 bash scripts/15-enable-kubernetes-logs.sh
 bash scripts/16-verify-kubernetes-logs.sh
+bash scripts/17-configure-grafana-logs.sh
+bash scripts/18-verify-grafana-logs.sh
 ```
 
 Read the output after each stage before continuing.
@@ -147,6 +151,8 @@ The final script checks:
 - A synthetic validation log can be pushed and queried
 - Alloy discovers pods and sends Kubernetes container logs to Loki
 - Log streams contain bounded cluster, environment, namespace, app, pod, and container labels
+- Grafana provisions Loki and the Kubernetes logs dashboard automatically
+- Grafana can query Loki through its server-side data-source proxy
 
 It writes a timestamped report to:
 
