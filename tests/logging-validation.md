@@ -42,11 +42,15 @@ Verification report: `/tmp/softcon-aiops-kubernetes-logs-20260825-230216.log`
 
 | Check | Result | Evidence |
 |---|---|---|
-| Loki data source is provisioned | Not run | |
-| Grafana reports the Loki data source healthy | Not run | |
-| Kubernetes log dashboard is provisioned | Not run | |
-| Grafana proxy returns a Loki query | Not run | |
+| Loki data source is provisioned | Pass | Read-only data source `loki` points to the in-cluster Loki gateway. |
+| Grafana reports the Loki data source healthy | Pass | Health API returned `Data source successfully connected` with status `OK`. |
+| Kubernetes log dashboard is provisioned | Pass | Dashboard `softcon-kubernetes-logs` is present in the SOFTCON AIOps folder. |
+| Grafana proxy returns a Loki query | Pass | Query returned a live Loki gateway log collected by Alloy. |
 
 ## Decision
 
-Increment C accepted: No
+Increment C accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-grafana-logs-20260825-232213.log`
+
+Grafana upgrade recovery used the `Recreate` strategy and disabled the redundant `init-chown-data` container. The original 5 GiB PVC remained Bound.
