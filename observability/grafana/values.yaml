@@ -43,6 +43,16 @@ datasources:
           httpMethod: POST
           timeInterval: 15s
 
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.observability.svc.cluster.local
+        isDefault: false
+        editable: false
+        jsonData:
+          maxLines: 1000
+
 dashboardProviders:
   dashboardproviders.yaml:
     apiVersion: 1
