@@ -1,0 +1,68 @@
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "http://mimir.observability.svc.cluster.local:9009/api/v1/push"
+  }
+}
+
+prometheus.relabel "node_exporter" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    source_labels = ["fstype"]
+    regex         = "tmpfs|devtmpfs|overlay|squashfs|fuse\\..*"
+    action        = "drop"
+  }
+
+  rule {
+    target_label = "cluster"
+    replacement  = "softcon-aiops-lab"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "lab"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "node-exporter"
+  }
+}
+
+prometheus.scrape "node_exporter" {
+  targets = [{
+    "__address__" = "prometheus-node-exporter.observability.svc.cluster.local:9100",
+    "instance"    = "pop-os",
+  }]
+
+  scrape_interval = "15s"
+  forward_to      = [prometheus.relabel.node_exporter.receiver]
+}
+
+prometheus.relabel "kube_state_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster"
+    replacement  = "softcon-aiops-lab"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "lab"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "kube-state-metrics"
+  }
+}
+
+prometheus.scrape "kube_state_metrics" {
+  targets = [{
+    "__address__" = "kube-state-metrics.observability.svc.cluster.local:8080",
+  }]
+
+  scrape_interval = "15s"
+  forward_to      = [prometheus.relabel.kube_state_metrics.receiver]
+}
