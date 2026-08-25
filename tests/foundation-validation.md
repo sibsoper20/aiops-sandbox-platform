@@ -17,4 +17,4 @@
 
 ## Decision
 
-Foundation accepted: No
+Foundation accepted: Yes
