@@ -51,3 +51,19 @@ Increment B accepted: Yes
 Verification report: `/tmp/softcon-aiops-node-exporter-20260825-214433.log`
 
 Node Exporter also exposed temporary, tmpfs, and LM Studio AppImage FUSE mounts. These will be filtered in Alloy before remote write.
+
+## Increment C — Metrics storage
+
+| Check | Result | Evidence |
+|---|---|---|
+| Mimir deployment is available | Not run | |
+| Mimir pod is running | Not run | |
+| Mimir persistent volume is Bound | Not run | |
+| Mimir readiness endpoint succeeds | Not run | |
+| Mimir PromQL query API succeeds | Not run | |
+
+## Decision
+
+Increment C accepted: No
+
+Metric ingestion and persistence will be validated in Increment D after Alloy is connected.
