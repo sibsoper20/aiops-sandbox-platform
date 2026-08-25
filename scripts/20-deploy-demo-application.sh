@@ -28,7 +28,6 @@ kctl -n demo rollout status statefulset/demo-postgres --timeout=300s
 
 info "Deploying the demo order API"
 kctl apply -f "$REPO_ROOT/apps/demo-api/kubernetes/api.yaml"
-kctl -n demo rollout restart deployment/demo-api
 kctl -n demo rollout status deployment/demo-api --timeout=300s
 
 info "Demo application resources"
