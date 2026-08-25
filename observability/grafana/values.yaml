@@ -1,0 +1,67 @@
+persistence:
+  enabled: true
+  storageClassName: local-path
+  size: 5Gi
+
+admin:
+  existingSecret: grafana-admin-credentials
+  userKey: admin-user
+  passwordKey: admin-password
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - grafana.aiops.local
+  path: /
+  pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 750m
+    memory: 1Gi
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Mimir
+        uid: mimir
+        type: prometheus
+        access: proxy
+        url: http://mimir.observability.svc.cluster.local:9009/prometheus
+        isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: POST
+          timeInterval: 15s
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: platform
+        orgId: 1
+        folder: SOFTCON AIOps
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/platform
+
+dashboardsConfigMaps:
+  platform: grafana-platform-dashboard
+
+grafana.ini:
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+  security:
+    cookie_secure: false
