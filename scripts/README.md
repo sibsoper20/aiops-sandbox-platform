@@ -35,6 +35,7 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 16 | `16-verify-kubernetes-logs.sh` | Proves a labeled container log reaches Loki |
 | 17 | `17-configure-grafana-logs.sh` | Provisions Loki and the log dashboard in Grafana |
 | 18 | `18-verify-grafana-logs.sh` | Verifies Grafana data source, dashboard, and Loki query |
+| 19 | `19-verify-demo-api-source.sh` | Tests the Go API, endpoints, metrics, and JSON logs |
 
 Later scripts will add Kubernetes log collection, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
@@ -84,6 +85,7 @@ bash scripts/15-enable-kubernetes-logs.sh
 bash scripts/16-verify-kubernetes-logs.sh
 bash scripts/17-configure-grafana-logs.sh
 bash scripts/18-verify-grafana-logs.sh
+bash scripts/19-verify-demo-api-source.sh
 ```
 
 Read the output after each stage before continuing.
