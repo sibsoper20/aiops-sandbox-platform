@@ -82,4 +82,22 @@ Metric ingestion and persistence will be validated in Increment D after Alloy is
 
 ## Decision
 
-Increment D accepted: No
+Increment D accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-alloy-20260825-220454.log`
+
+The validation proved both scrape targets were up, stable labels reached Mimir, and the excluded filesystem query returned an empty result.
+
+## Increment E — Visualization
+
+| Check | Result | Evidence |
+|---|---|---|
+| Grafana deployment is available | Not run | |
+| Grafana persistent volume is Bound | Not run | |
+| Mimir data source is provisioned | Not run | |
+| Platform dashboard is provisioned | Not run | |
+| Grafana ingress responds | Not run | |
+
+## Decision
+
+Increment E accepted: No
