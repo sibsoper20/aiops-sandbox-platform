@@ -40,6 +40,8 @@ helm template grafana grafana-community/grafana \
   --values "$REPO_ROOT/observability/grafana/values.yaml" \
   >/tmp/softcon-aiops-grafana-rendered.yaml
 
+info "Grafana uses Recreate strategy for its single-writer SQLite volume"
+
 info "Deploying Grafana"
 helm upgrade --install grafana grafana-community/grafana \
   --namespace observability \
