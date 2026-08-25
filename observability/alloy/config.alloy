@@ -66,3 +66,59 @@ prometheus.scrape "kube_state_metrics" {
   scrape_interval = "15s"
   forward_to      = [prometheus.relabel.kube_state_metrics.receiver]
 }
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"
+  }
+}
+
+discovery.kubernetes "pods" {
+  role = "pod"
+}
+
+discovery.relabel "pod_logs" {
+  targets = discovery.kubernetes.pods.targets
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace"]
+    target_label  = "namespace"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_name"]
+    target_label  = "pod"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+    target_label  = "app"
+  }
+
+  rule {
+    source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+    separator     = "/"
+    target_label  = "job"
+  }
+}
+
+loki.source.kubernetes "pod_logs" {
+  targets    = discovery.relabel.pod_logs.output
+  forward_to = [loki.process.pod_logs.receiver]
+}
+
+loki.process "pod_logs" {
+  stage.static_labels {
+    values = {
+      cluster     = "softcon-aiops-lab",
+      environment = "lab",
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
