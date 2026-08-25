@@ -28,8 +28,8 @@ cd "$REPO_ROOT/apps/demo-api"
   info "Go version"
   go version
 
-  info "Downloading application dependencies"
-  go mod download
+  info "Resolving and recording application dependencies"
+  go mod tidy
 
   info "Formatting check"
   UNFORMATTED="$(gofmt -l .)"
