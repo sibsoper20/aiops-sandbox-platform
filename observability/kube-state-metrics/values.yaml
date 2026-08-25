@@ -1,0 +1,19 @@
+replicas: 1
+
+prometheusScrape: true
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+prometheus:
+  monitor:
+    enabled: false
+
+customLabels:
+  app.kubernetes.io/part-of: softcon-aiops-demo
+  environment: lab
