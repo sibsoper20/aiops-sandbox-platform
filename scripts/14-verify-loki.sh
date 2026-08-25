@@ -13,12 +13,17 @@ kctl -n observability get statefulset loki >/dev/null 2>&1 ||
 
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 REPORT="/tmp/softcon-aiops-loki-$TIMESTAMP.log"
-PORT_FORWARD_LOG="/tmp/softcon-loki-port-forward-$TIMESTAMP.log"
-PF_PID=""
+GATEWAY_PORT_FORWARD_LOG="/tmp/softcon-loki-gateway-port-forward-$TIMESTAMP.log"
+DIRECT_PORT_FORWARD_LOG="/tmp/softcon-loki-direct-port-forward-$TIMESTAMP.log"
+GATEWAY_PF_PID=""
+DIRECT_PF_PID=""
 
 cleanup() {
-  if [[ -n "$PF_PID" ]]; then
-    kill "$PF_PID" >/dev/null 2>&1 || true
+  if [[ -n "$GATEWAY_PF_PID" ]]; then
+    kill "$GATEWAY_PF_PID" >/dev/null 2>&1 || true
+  fi
+  if [[ -n "$DIRECT_PF_PID" ]]; then
+    kill "$DIRECT_PF_PID" >/dev/null 2>&1 || true
   fi
 }
 trap cleanup EXIT
@@ -39,20 +44,36 @@ PVC_NAME="$(kctl -n observability get pvc \
 PVC_STATUS="$(kctl -n observability get pvc "$PVC_NAME" -o jsonpath='{.status.phase}')"
 [[ "$PVC_STATUS" == "Bound" ]] || fail "Loki PVC is not Bound"
 
-info "Starting temporary Loki gateway port forward"
-kctl -n observability port-forward service/loki-gateway 13100:80 \
-  >"$PORT_FORWARD_LOG" 2>&1 &
-PF_PID="$!"
+info "Starting temporary direct Loki port forward for readiness"
+kctl -n observability port-forward statefulset/loki 13101:3100 \
+  >"$DIRECT_PORT_FORWARD_LOG" 2>&1 &
+DIRECT_PF_PID="$!"
 
 LOKI_READY="false"
 for _ in {1..60}; do
-  if curl -fsS http://127.0.0.1:13100/ready >/tmp/softcon-loki-ready.txt 2>/dev/null; then
+  if curl -fsS http://127.0.0.1:13101/ready >/tmp/softcon-loki-ready.txt 2>/dev/null; then
     LOKI_READY="true"
     break
   fi
   sleep 1
 done
-[[ "$LOKI_READY" == "true" ]] || fail "Loki readiness endpoint did not become available"
+[[ "$LOKI_READY" == "true" ]] || fail "Direct Loki readiness endpoint did not become available"
+
+info "Starting temporary Loki gateway port forward for API validation"
+kctl -n observability port-forward service/loki-gateway 13100:80 \
+  >"$GATEWAY_PORT_FORWARD_LOG" 2>&1 &
+GATEWAY_PF_PID="$!"
+
+GATEWAY_READY="false"
+for _ in {1..30}; do
+  if curl -fsS http://127.0.0.1:13100/loki/api/v1/status/buildinfo \
+    >/tmp/softcon-loki-buildinfo.json 2>/dev/null; then
+    GATEWAY_READY="true"
+    break
+  fi
+  sleep 1
+done
+[[ "$GATEWAY_READY" == "true" ]] || fail "Loki API was not reachable through the gateway"
 
 LOG_TIME="$(date +%s%N)"
 LOG_MESSAGE="softcon-loki-validation-$TIMESTAMP"
@@ -79,6 +100,9 @@ grep -q "$LOG_MESSAGE" <<<"$QUERY_RESULT" || fail "Synthetic validation log was 
 {
   info "Loki readiness"
   cat /tmp/softcon-loki-ready.txt
+
+  info "Loki API through gateway"
+  cat /tmp/softcon-loki-buildinfo.json
 
   info "Loki persistent volume"
   printf 'PVC: %s\nStatus: %s\n' "$PVC_NAME" "$PVC_STATUS"
