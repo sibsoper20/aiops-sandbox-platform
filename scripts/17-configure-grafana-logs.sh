@@ -25,6 +25,15 @@ kctl -n observability create configmap grafana-platform-dashboard \
 info "Grafana uses Recreate strategy for its single-writer SQLite volume"
 info "The existing writable volume does not require the chart's chown initializer"
 
+CURRENT_STRATEGY="$(kctl -n observability get deployment grafana -o jsonpath='{.spec.strategy.type}')"
+if [[ "$CURRENT_STRATEGY" != "Recreate" ]]; then
+  info "Clearing the previous RollingUpdate strategy before the Helm upgrade"
+  kctl -n observability patch deployment grafana --type=json -p='[
+    {"op":"remove","path":"/spec/strategy/rollingUpdate"},
+    {"op":"replace","path":"/spec/strategy/type","value":"Recreate"}
+  ]'
+fi
+
 info "Updating Grafana provisioning"
 helm repo add grafana-community https://grafana-community.github.io/helm-charts --force-update
 helm repo update grafana-community
