@@ -22,11 +22,14 @@ kctl -n observability create configmap grafana-platform-dashboard \
   --from-file=kubernetes-logs.json="$REPO_ROOT/observability/grafana/kubernetes-logs.json" \
   --dry-run=client -o yaml | kctl apply -f -
 
+info "Grafana uses Recreate strategy for its single-writer SQLite volume"
+info "The existing writable volume does not require the chart's chown initializer"
+
 info "Updating Grafana provisioning"
 helm repo add grafana-community https://grafana-community.github.io/helm-charts --force-update
 helm repo update grafana-community
 
-helm upgrade grafana grafana-community/grafana \
+helm upgrade --install grafana grafana-community/grafana \
   --namespace observability \
   --version "$GRAFANA_CHART_VERSION" \
   --values "$REPO_ROOT/observability/grafana/values.yaml" \
