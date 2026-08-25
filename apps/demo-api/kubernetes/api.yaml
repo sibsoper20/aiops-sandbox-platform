@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: demo-api
-          image: ghcr.io/sibsoper20/aiops-sandbox-platform/demo-api:softcon-2027
+          image: ghcr.io/sibsoper20/aiops-sandbox-platform/demo-api:sha-bc24639
           imagePullPolicy: Always
           ports:
             - name: http
