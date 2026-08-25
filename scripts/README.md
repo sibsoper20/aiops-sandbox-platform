@@ -28,6 +28,7 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 10 | `10-verify-alloy.sh` | Proves both metric sources reach Mimir with labels and filtering |
 | 11 | `11-deploy-grafana.sh` | Deploys persistent Grafana with Mimir and a dashboard |
 | 12 | `12-verify-grafana.sh` | Checks health, provisioning, ingress, and storage |
+| Utility | `rotate-grafana-admin-password.sh` | Rotates Grafana and synchronizes its Kubernetes Secret |
 
 Later scripts will add Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
@@ -196,6 +197,12 @@ Grafana logs:
 
 ```bash
 sudo k3s kubectl -n observability logs deployment/grafana --tail=100
+```
+
+Rotate the local Grafana password if it is exposed:
+
+```bash
+bash scripts/rotate-grafana-admin-password.sh
 ```
 
 Retrieve the local Grafana password without storing it in Git:
