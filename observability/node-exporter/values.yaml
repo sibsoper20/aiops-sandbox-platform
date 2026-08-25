@@ -1,0 +1,27 @@
+image:
+  tag: "v1.12.1"
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 9100
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9100"
+    prometheus.io/path: "/metrics"
+
+prometheus:
+  monitor:
+    enabled: false
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+commonLabels:
+  app.kubernetes.io/part-of: softcon-aiops-demo
+  environment: lab
