@@ -26,8 +26,10 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 8 | `08-verify-mimir.sh` | Checks Mimir storage, readiness, and query API |
 | 9 | `09-deploy-alloy.sh` | Deploys Alloy and its metrics collection pipeline |
 | 10 | `10-verify-alloy.sh` | Proves both metric sources reach Mimir with labels and filtering |
+| 11 | `11-deploy-grafana.sh` | Deploys persistent Grafana with Mimir and a dashboard |
+| 12 | `12-verify-grafana.sh` | Checks health, provisioning, ingress, and storage |
 
-Later scripts will add Grafana, Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
+Later scripts will add Loki, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
 ## Start from scratch
 
@@ -67,6 +69,8 @@ bash scripts/07-deploy-mimir.sh
 bash scripts/08-verify-mimir.sh
 bash scripts/09-deploy-alloy.sh
 bash scripts/10-verify-alloy.sh
+bash scripts/11-deploy-grafana.sh
+bash scripts/12-verify-grafana.sh
 ```
 
 Read the output after each stage before continuing.
@@ -96,6 +100,7 @@ Optional environment variables:
 | `KSM_CHART_VERSION` | `8.4.0` | kube-state-metrics Helm chart version |
 | `NODE_EXPORTER_CHART_VERSION` | `4.56.1` | Node Exporter Helm chart version |
 | `ALLOY_CHART_VERSION` | `1.12.0` | Grafana Alloy Helm chart version |
+| `GRAFANA_CHART_VERSION` | `10.5.15` | Grafana Community Helm chart version |
 | `KUBECONFIG` | `$HOME/.kube/config` | User kubeconfig used by Helm |
 
 Example with an exact k3s version:
@@ -125,6 +130,9 @@ The final script checks:
 - Alloy scrapes Node Exporter and kube-state-metrics
 - Mimir contains both metric streams with stable lab labels
 - Temporary, tmpfs, and FUSE filesystem metrics are filtered
+- Grafana is healthy and uses persistent storage
+- Mimir and the platform dashboard are provisioned automatically
+- Grafana ingress responds at `grafana.aiops.local`
 
 It writes a timestamped report to:
 
@@ -184,6 +192,20 @@ Alloy logs:
 sudo k3s kubectl -n observability logs deployment/alloy --tail=100
 ```
 
+Grafana logs:
+
+```bash
+sudo k3s kubectl -n observability logs deployment/grafana --tail=100
+```
+
+Retrieve the local Grafana password without storing it in Git:
+
+```bash
+sudo k3s kubectl -n observability get secret grafana-admin-credentials \
+  -o jsonpath='{.data.admin-password}' | base64 -d
+echo
+```
+
 Helm releases:
 
 ```bash
@@ -193,6 +215,15 @@ helm list -A
 ## Cleanup
 
 Cleanup is deliberately manual so learners can see what is being removed.
+
+Remove Grafana while retaining its persistent volume:
+
+```bash
+helm uninstall grafana -n observability
+sudo k3s kubectl -n observability delete configmap grafana-platform-dashboard
+```
+
+Keep `grafana-admin-credentials` if you plan to reinstall. Deleting it changes the local login on the next deployment.
 
 Remove Alloy:
 
