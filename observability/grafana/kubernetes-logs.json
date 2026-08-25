@@ -1,0 +1,56 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Log Lines — Last 5 Minutes",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "sum(count_over_time({cluster=\"softcon-aiops-lab\"}[5m]))", "refId": "A"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Error-like Lines — Last 5 Minutes",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "sum(count_over_time({cluster=\"softcon-aiops-lab\"} |~ \"(?i)error|exception|fail\" [5m]))", "refId": "A"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "orange", "value": 1}, {"color": "red", "value": 10}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "Active Namespaces — Last 5 Minutes",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "count(sum by (namespace) (count_over_time({cluster=\"softcon-aiops-lab\"}[5m])))", "refId": "A"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 16, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Log Volume by Namespace",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "sum by (namespace) (count_over_time({cluster=\"softcon-aiops-lab\"}[$__auto]))", "legendFormat": "{{namespace}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "logs/sec"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 5}
+    },
+    {
+      "type": "logs",
+      "title": "Recent Kubernetes Logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "{cluster=\"softcon-aiops-lab\"}", "refId": "A"}],
+      "options": {"showTime": true, "showLabels": false, "wrapLogMessage": true, "prettifyLogMessage": false, "enableLogDetails": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 13}
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 41,
+  "tags": ["softcon-2027", "kubernetes", "logs", "loki"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "timezone": "browser",
+  "title": "SOFTCON Kubernetes Logs",
+  "uid": "softcon-kubernetes-logs",
+  "version": 1
+}
