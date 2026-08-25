@@ -32,3 +32,18 @@ Verification report generated on the host:
 ```
 
 The first port-forward connection attempt occurred before the listener was ready. The script retried successfully and completed verification.
+
+## Increment B — Host metrics
+
+| Check | Result | Evidence |
+|---|---|---|
+| Node Exporter DaemonSet is available | Not run | |
+| Node Exporter pod is running | Not run | |
+| Node Exporter service is reachable | Not run | |
+| CPU metrics are exposed | Not run | |
+| Memory metrics are exposed | Not run | |
+| Filesystem metrics are exposed | Not run | |
+
+## Decision
+
+Increment B accepted: No
