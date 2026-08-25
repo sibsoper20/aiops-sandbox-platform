@@ -1,0 +1,88 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Node Exporter",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "up{job=\"node-exporter\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "green", "value": 1}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0}
+    },
+    {
+      "type": "stat",
+      "title": "kube-state-metrics",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "up{job=\"kube-state-metrics\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}], "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red"}, {"color": "green", "value": 1}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0}
+    },
+    {
+      "type": "gauge",
+      "title": "CPU Usage",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]}}, "overrides": []},
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+    },
+    {
+      "type": "gauge",
+      "title": "Memory Usage",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "orange", "value": 70}, {"color": "red", "value": 90}]}}, "overrides": []},
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU Usage Over Time",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "legendFormat": "CPU", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 8}
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage Over Time",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)", "legendFormat": "Memory", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 8}
+    },
+    {
+      "type": "stat",
+      "title": "Running Pods",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "sum(kube_pod_status_phase{phase=\"Running\"})", "refId": "A"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 0, "y": 17}
+    },
+    {
+      "type": "stat",
+      "title": "Unavailable Deployments",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "sum(kube_deployment_status_replicas_unavailable)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 1}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 8, "y": 17}
+    },
+    {
+      "type": "gauge",
+      "title": "Root Filesystem Usage",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "targets": [{"expr": "100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "orange", "value": 75}, {"color": "red", "value": 90}]}}, "overrides": []},
+      "gridPos": {"h": 5, "w": 8, "x": 16, "y": 17}
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 41,
+  "tags": ["softcon-2027", "platform", "aiops"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "timezone": "browser",
+  "title": "SOFTCON AIOps Platform Overview",
+  "uid": "softcon-platform-overview",
+  "version": 1
+}
