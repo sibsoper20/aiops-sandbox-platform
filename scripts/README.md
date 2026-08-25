@@ -65,10 +65,16 @@ Read the output after each stage before continuing.
 
 ### 3. Optional combined runner
 
-After reading the individual scripts, you can run all currently supported stages:
+After reading the individual scripts, you can run through Kubernetes object metrics:
 
 ```bash
 bash scripts/run-through-kubernetes-metrics.sh
+```
+
+To include host metrics through Node Exporter:
+
+```bash
+bash scripts/run-through-host-metrics.sh
 ```
 
 ## Configuration
