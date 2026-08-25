@@ -8,6 +8,12 @@ source "$SCRIPT_DIR/lib/common.sh"
 require_command curl
 sudo -v
 
+kctl -n observability get secret grafana-admin-credentials >/dev/null 2>&1 ||
+  fail "Grafana administrator secret not found. Run bash scripts/11-deploy-grafana.sh first."
+
+kctl -n observability get deployment grafana >/dev/null 2>&1 ||
+  fail "Grafana deployment not found. Run bash scripts/11-deploy-grafana.sh first."
+
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 REPORT="/tmp/softcon-aiops-grafana-$TIMESTAMP.log"
 PORT_FORWARD_LOG="/tmp/softcon-grafana-port-forward-$TIMESTAMP.log"
