@@ -1,3 +1,9 @@
+deploymentStrategy:
+  type: Recreate
+
+initChownData:
+  enabled: false
+
 persistence:
   enabled: true
   storageClassName: local-path
