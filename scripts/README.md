@@ -168,6 +168,8 @@ Review that report yourself. The script does not automatically claim that a phas
 - Never commit kubeconfig, tokens, private keys, passwords, or local `.env` files.
 - Review remote installer scripts before running them.
 - This is a learning and conference demonstration environment, not a production high-availability setup.
+- Grafana uses the `Recreate` deployment strategy because the lab has one SQLite-backed, single-writer persistent volume. Grafana is briefly unavailable during an upgrade.
+- The chart's `init-chown-data` step is disabled because it cannot change ownership of Grafana-created export directories on the existing local volume; the Grafana process already has verified write access.
 - The validation workload currently uses a mutable test image. A reviewed digest should be pinned before the demo is frozen.
 
 ## Troubleshooting
