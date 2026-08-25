@@ -92,12 +92,16 @@ The validation proved both scrape targets were up, stable labels reached Mimir, 
 
 | Check | Result | Evidence |
 |---|---|---|
-| Grafana deployment is available | Not run | |
-| Grafana persistent volume is Bound | Not run | |
-| Mimir data source is provisioned | Not run | |
-| Platform dashboard is provisioned | Not run | |
-| Grafana ingress responds | Not run | |
+| Grafana deployment is available | Pass | Grafana 12.3.1 rolled out with 1/1 available replica. |
+| Grafana persistent volume is Bound | Pass | Grafana PVC is Bound with 5 GiB on `local-path`. |
+| Mimir data source is provisioned | Pass | Default, read-only data source `mimir` points to the in-cluster Mimir endpoint. |
+| Platform dashboard is provisioned | Pass | Dashboard `softcon-platform-overview` is present in the SOFTCON AIOps folder. |
+| Grafana ingress responds | Pass | `grafana.aiops.local` returned HTTP 302 to the login flow. |
 
 ## Decision
 
-Increment E accepted: No
+Increment E accepted: Yes
+
+Verification report: `/tmp/softcon-aiops-grafana-20260825-222646.log`
+
+Security follow-up: the original report contained the generated lab password. Rotate it with `scripts/rotate-grafana-admin-password.sh` and do not share the old report.
