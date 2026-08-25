@@ -26,6 +26,7 @@ fi
 info "Creating or updating the dashboard ConfigMap"
 kctl -n observability create configmap grafana-platform-dashboard \
   --from-file=platform-overview.json="$REPO_ROOT/observability/grafana/platform-overview.json" \
+  --from-file=kubernetes-logs.json="$REPO_ROOT/observability/grafana/kubernetes-logs.json" \
   --dry-run=client -o yaml | kctl apply -f -
 
 info "Adding the maintained Grafana Community Helm repository"
