@@ -67,6 +67,45 @@ prometheus.scrape "kube_state_metrics" {
   forward_to      = [prometheus.relabel.kube_state_metrics.receiver]
 }
 
+prometheus.relabel "demo_api" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster"
+    replacement  = "softcon-aiops-lab"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "lab"
+  }
+
+  rule {
+    target_label = "namespace"
+    replacement  = "demo"
+  }
+
+  rule {
+    target_label = "app"
+    replacement  = "demo-api"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "demo-api"
+  }
+}
+
+prometheus.scrape "demo_api" {
+  targets = [{
+    "__address__" = "demo-api.demo.svc.cluster.local:8080",
+  }]
+
+  metrics_path    = "/metrics"
+  scrape_interval = "15s"
+  forward_to      = [prometheus.relabel.demo_api.receiver]
+}
+
 loki.write "loki" {
   endpoint {
     url = "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"

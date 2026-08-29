@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-traffic-generator
+  namespace: demo
+  labels:
+    app.kubernetes.io/name: demo-traffic-generator
+    app.kubernetes.io/part-of: softcon-aiops-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: demo-traffic-generator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: demo-traffic-generator
+        app.kubernetes.io/part-of: softcon-aiops-demo
+    spec:
+      containers:
+        - name: traffic-generator
+          image: busybox:1.37.0
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              while true; do
+                wget -qO- http://demo-api.demo.svc.cluster.local:8080/healthz >/dev/null || true
+                wget -qO- http://demo-api.demo.svc.cluster.local:8080/api/orders >/dev/null || true
+                sleep 5
+              done
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            capabilities:
+              drop:
+                - ALL

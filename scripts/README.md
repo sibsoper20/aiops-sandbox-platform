@@ -38,8 +38,10 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 19 | `19-verify-demo-api-source.sh` | Tests the Go API, endpoints, metrics, and JSON logs |
 | 20 | `20-deploy-demo-application.sh` | Deploys PostgreSQL and the order API |
 | 21 | `21-verify-demo-application.sh` | Proves API behavior and database persistence |
+| 22 | `22-enable-demo-telemetry.sh` | Adds baseline traffic, API metric scraping, and the Grafana dashboard |
+| 23 | `23-verify-demo-telemetry.sh` | Verifies API metrics in Mimir, logs in Loki, and the Grafana dashboard |
 
-Later scripts will add Kubernetes log collection, the incident simulator, and the local AI investigation workflow. Those phases are not yet represented as working scripts.
+Later scripts will add the incident simulator and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
 ## Start from scratch
 

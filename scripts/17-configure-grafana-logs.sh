@@ -20,6 +20,7 @@ info "Updating the Grafana dashboard ConfigMap"
 kctl -n observability create configmap grafana-platform-dashboard \
   --from-file=platform-overview.json="$REPO_ROOT/observability/grafana/platform-overview.json" \
   --from-file=kubernetes-logs.json="$REPO_ROOT/observability/grafana/kubernetes-logs.json" \
+  --from-file=demo-api.json="$REPO_ROOT/observability/grafana/demo-api.json" \
   --dry-run=client -o yaml | kctl apply -f -
 
 info "Grafana uses Recreate strategy for its single-writer SQLite volume"
