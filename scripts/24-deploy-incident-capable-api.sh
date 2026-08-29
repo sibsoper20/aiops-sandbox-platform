@@ -22,6 +22,13 @@ IMAGE="$(kctl -n demo get deployment demo-api -o jsonpath='{.spec.template.spec.
 info "Confirming the healthy baseline"
 kctl -n demo run demo-api-baseline-check --rm -i --restart=Never \
   --image=busybox:1.37.0 --quiet -- \
-  wget -qO- http://demo-api.demo.svc.cluster.local:8080/readyz
+  /bin/sh -ec 'for attempt in $(seq 1 30); do
+    if wget -qO- http://demo-api.demo.svc.cluster.local:8080/readyz; then
+      exit 0
+    fi
+    sleep 2
+  done
+  echo "Demo API did not become reachable" >&2
+  exit 1'
 
 info "Stage 24 complete"
