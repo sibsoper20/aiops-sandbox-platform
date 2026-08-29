@@ -38,7 +38,7 @@ done
 
 METRICS="$(curl -fsS -u "$ADMIN_USER:$ADMIN_PASSWORD" --get \
   --data-urlencode 'query=demo_http_requests_total{job="demo-api"}' \
-  http://127.0.0.1:13000/api/datasources/proxy/uid/mimir/prometheus/api/v1/query)"
+  http://127.0.0.1:13000/api/datasources/proxy/uid/mimir/api/v1/query)"
 LOGS="$(curl -fsS -u "$ADMIN_USER:$ADMIN_PASSWORD" --get \
   --data-urlencode 'query={namespace="demo",app="demo-api"}' \
   --data-urlencode 'limit=5' \
