@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func testApplication() *application {
@@ -96,5 +97,60 @@ func TestMetrics(t *testing.T) {
 	if !strings.Contains(body, "demo_http_requests_total") ||
 		!strings.Contains(body, "demo_http_request_duration_seconds_count") {
 		t.Fatalf("metrics missing: %s", body)
+	}
+}
+
+func TestIncidentErrorInjectionDoesNotAffectHealth(t *testing.T) {
+	app := testApplication()
+	app.incident.errorPercent = 100
+	server := httptest.NewServer(app.routes())
+	defer server.Close()
+
+	response, err := http.Get(server.URL + "/api/orders")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("expected injected 500, got %d", response.StatusCode)
+	}
+
+	response, err = http.Get(server.URL + "/healthz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("health endpoint must remain available, got %d", response.StatusCode)
+	}
+	if app.metrics.incidentErrors.Load() != 1 {
+		t.Fatalf("expected one injected error, got %d", app.metrics.incidentErrors.Load())
+	}
+}
+
+func TestIncidentDelayInjection(t *testing.T) {
+	app := testApplication()
+	app.incident.delay = 20 * time.Millisecond
+	request := httptest.NewRequest(http.MethodGet, "/api/orders", nil)
+	recorder := httptest.NewRecorder()
+	start := time.Now()
+	app.routes().ServeHTTP(recorder, request)
+	if elapsed := time.Since(start); elapsed < 20*time.Millisecond {
+		t.Fatalf("request was not delayed: %s", elapsed)
+	}
+	if app.metrics.incidentDelays.Load() != 1 {
+		t.Fatalf("expected one delay injection, got %d", app.metrics.incidentDelays.Load())
+	}
+}
+
+func TestLoadIncidentConfigRejectsUnsafeValues(t *testing.T) {
+	t.Setenv("INCIDENT_DELAY_MS", "10001")
+	if _, err := loadIncidentConfig(); err == nil {
+		t.Fatal("expected invalid delay to fail")
+	}
+	t.Setenv("INCIDENT_DELAY_MS", "0")
+	t.Setenv("INCIDENT_ERROR_PERCENT", "101")
+	if _, err := loadIncidentConfig(); err == nil {
+		t.Fatal("expected invalid error percentage to fail")
 	}
 }

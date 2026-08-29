@@ -150,6 +150,8 @@ type appMetrics struct {
 	dbQueries      atomic.Uint64
 	dbErrors       atomic.Uint64
 	durationMicros atomic.Uint64
+	incidentDelays atomic.Uint64
+	incidentErrors atomic.Uint64
 }
 
 func (m *appMetrics) handler(w http.ResponseWriter, _ *http.Request) {
@@ -173,6 +175,12 @@ func (m *appMetrics) handler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintf(w, "# TYPE demo_http_request_duration_seconds summary\n")
 	fmt.Fprintf(w, "demo_http_request_duration_seconds_sum %.6f\n", float64(m.durationMicros.Load())/1_000_000)
 	fmt.Fprintf(w, "demo_http_request_duration_seconds_count %d\n", m.requests.Load())
+	fmt.Fprintf(w, "# HELP demo_incident_delay_injections_total Total requests delayed by incident simulation.\n")
+	fmt.Fprintf(w, "# TYPE demo_incident_delay_injections_total counter\n")
+	fmt.Fprintf(w, "demo_incident_delay_injections_total %d\n", m.incidentDelays.Load())
+	fmt.Fprintf(w, "# HELP demo_incident_error_injections_total Total HTTP errors injected by incident simulation.\n")
+	fmt.Fprintf(w, "# TYPE demo_incident_error_injections_total counter\n")
+	fmt.Fprintf(w, "demo_incident_error_injections_total %d\n", m.incidentErrors.Load())
 }
 
 type statusWriter struct {
@@ -186,9 +194,16 @@ func (w *statusWriter) WriteHeader(status int) {
 }
 
 type application struct {
-	store   orderStore
-	metrics *appMetrics
-	logger  *slog.Logger
+	store          orderStore
+	metrics        *appMetrics
+	logger         *slog.Logger
+	incident       incidentConfig
+	incidentCursor atomic.Uint64
+}
+
+type incidentConfig struct {
+	delay        time.Duration
+	errorPercent uint64
 }
 
 func (a *application) routes() http.Handler {
@@ -198,7 +213,34 @@ func (a *application) routes() http.Handler {
 	mux.HandleFunc("GET /api/orders", a.listOrders)
 	mux.HandleFunc("POST /api/orders", a.createOrder)
 	mux.HandleFunc("GET /metrics", a.metrics.handler)
-	return a.observe(mux)
+	return a.observe(a.injectIncident(mux))
+}
+
+func (a *application) injectIncident(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/api/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if a.incident.delay > 0 {
+			a.metrics.incidentDelays.Add(1)
+			a.logger.Warn("incident delay injected", "path", r.URL.Path, "delay_ms", a.incident.delay.Milliseconds())
+			timer := time.NewTimer(a.incident.delay)
+			defer timer.Stop()
+			select {
+			case <-r.Context().Done():
+				return
+			case <-timer.C:
+			}
+		}
+		if a.incident.errorPercent > 0 && a.incidentCursor.Add(1)%100 < a.incident.errorPercent {
+			a.metrics.incidentErrors.Add(1)
+			a.logger.Error("incident error injected", "path", r.URL.Path, "error_percent", a.incident.errorPercent)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "simulated incident"})
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (a *application) observe(next http.Handler) http.Handler {
@@ -314,9 +356,32 @@ func buildStore(ctx context.Context, metrics *appMetrics, logger *slog.Logger) (
 	return store, nil
 }
 
+func loadIncidentConfig() (incidentConfig, error) {
+	config := incidentConfig{}
+	if raw := strings.TrimSpace(os.Getenv("INCIDENT_DELAY_MS")); raw != "" {
+		value, err := strconv.Atoi(raw)
+		if err != nil || value < 0 || value > 10000 {
+			return config, fmt.Errorf("INCIDENT_DELAY_MS must be between 0 and 10000")
+		}
+		config.delay = time.Duration(value) * time.Millisecond
+	}
+	if raw := strings.TrimSpace(os.Getenv("INCIDENT_ERROR_PERCENT")); raw != "" {
+		value, err := strconv.Atoi(raw)
+		if err != nil || value < 0 || value > 100 {
+			return config, fmt.Errorf("INCIDENT_ERROR_PERCENT must be between 0 and 100")
+		}
+		config.errorPercent = uint64(value)
+	}
+	return config, nil
+}
+
 func run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	metrics := &appMetrics{}
+	incident, err := loadIncidentConfig()
+	if err != nil {
+		return err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	store, err := buildStore(ctx, metrics, logger)
 	cancel()
@@ -331,7 +396,7 @@ func run() error {
 	}
 	server := &http.Server{
 		Addr:              ":" + port,
-		Handler:           (&application{store: store, metrics: metrics, logger: logger}).routes(),
+		Handler:           (&application{store: store, metrics: metrics, logger: logger, incident: incident}).routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      15 * time.Second,
@@ -347,7 +412,8 @@ func run() error {
 		_ = server.Shutdown(ctx)
 	}()
 
-	logger.Info("demo API starting", "port", port, "storage", store.Mode())
+	logger.Info("demo API starting", "port", port, "storage", store.Mode(),
+		"incident_delay_ms", incident.delay.Milliseconds(), "incident_error_percent", incident.errorPercent)
 	err = server.ListenAndServe()
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
