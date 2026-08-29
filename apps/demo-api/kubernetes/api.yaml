@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: demo-api
-          image: ghcr.io/sibsoper20/aiops-sandbox-platform/demo-api:sha-bc24639
+          image: ghcr.io/sibsoper20/aiops-sandbox-platform/demo-api:sha-1bd638d
           imagePullPolicy: Always
           ports:
             - name: http
@@ -56,6 +56,10 @@ spec:
               value: postgres://demo:$(DB_PASSWORD)@demo-postgres.demo.svc.cluster.local:5432/demo?sslmode=disable
             - name: PORT
               value: "8080"
+            - name: INCIDENT_DELAY_MS
+              value: "0"
+            - name: INCIDENT_ERROR_PERCENT
+              value: "0"
           readinessProbe:
             httpGet:
               path: /readyz

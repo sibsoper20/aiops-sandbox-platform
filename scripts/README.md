@@ -40,6 +40,7 @@ The scripts are safe to rerun where practical. They stop when a required check f
 | 21 | `21-verify-demo-application.sh` | Proves API behavior and database persistence |
 | 22 | `22-enable-demo-telemetry.sh` | Adds baseline traffic, API metric scraping, and the Grafana dashboard |
 | 23 | `23-verify-demo-telemetry.sh` | Verifies API metrics in Mimir, logs in Loki, and the Grafana dashboard |
+| 24 | `24-deploy-incident-capable-api.sh` | Deploys the immutable incident-capable API with injection disabled |
 
 Later scripts will add the incident simulator and the local AI investigation workflow. Those phases are not yet represented as working scripts.
 
