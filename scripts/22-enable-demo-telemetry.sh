@@ -32,6 +32,6 @@ helm upgrade --install alloy grafana/alloy \
 kctl -n observability rollout status deployment/alloy --timeout=300s
 
 info "Provisioning the demo API dashboard"
-bash "$SCRIPT_DIR/17-configure-grafana-logs.sh"
+bash "$REPO_ROOT/scripts/17-configure-grafana-logs.sh"
 
 info "Stage 22 complete"
